@@ -1,0 +1,132 @@
+{
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/api/bella",
+      "destination": "/api/bella/index.py"
+    },
+    {
+      "source": "/api/bella/youtube",
+      "destination": "/api/bella/youtube/index.py"
+    },
+    {
+      "source": "/api/bella/benchmark",
+      "destination": "/api/bella/benchmark/index.py"
+    },
+    {
+      "source": "/api/desa",
+      "destination": "/api/desa/index.py"
+    },
+    {
+      "source": "/api/desa/youtube",
+      "destination": "/api/desa/youtube/index.py"
+    },
+    {
+      "source": "/vizone/desa/desa-dashboard.html",
+      "destination": "/desa-dashboard.html"
+    },
+    {
+      "source": "/api/desa/google_ads",
+      "destination": "/api/desa/google_ads.py"
+    },
+    {
+      "source": "/api/desa/benchmark",
+      "destination": "/api/desa/benchmark.py"
+    },
+    {
+      "source": "/api/kigili",
+      "destination": "/api/kigili/index.py"
+    },
+    {
+      "source": "/api/kigili/youtube",
+      "destination": "/api/kigili/youtube/index.py"
+    },
+    {
+      "source": "/api/kigili/google_ads",
+      "destination": "/api/kigili/google_ads.py"
+    },
+    {
+      "source": "/api/kigili/benchmark",
+      "destination": "/api/kigili/benchmark.py"
+    },
+    {
+      "source": "/api/ecenin",
+      "destination": "/api/ecenin/index.py"
+    },
+    {
+      "source": "/api/ecenin/youtube",
+      "destination": "/api/ecenin/youtube/index.py"
+    },
+    {
+      "source": "/api/ecenin/google_ads",
+      "destination": "/api/ecenin/google_ads.py"
+    },
+    {
+      "source": "/api/ecenin/benchmark",
+      "destination": "/api/ecenin/benchmark.py"
+    },
+    {
+      "source": "/desa-dashboard",
+      "destination": "/desa-dashboard.html"
+    },
+    {
+      "source": "/desa-dashboard-v2",
+      "destination": "/desa-dashboard.html"
+    },
+    {
+      "source": "/vizone/kigili/kigili-dashboard.html",
+      "destination": "/kigili-dashboard-v2.html"
+    },
+    {
+      "source": "/kigili-dashboard",
+      "destination": "/kigili-dashboard-v2.html"
+    },
+    {
+      "source": "/kigili-dashboard-v2",
+      "destination": "/kigili-dashboard-v2.html"
+    },
+    {
+      "source": "/ecenin-butigi-dashboard",
+      "destination": "/ecenin-butigi-dashboard.html"
+    },
+    {
+      "source": "/vizone/ecenin-butigi/ecenin-butigi-dashboard.html",
+      "destination": "/ecenin-butigi-dashboard.html"
+    },
+    {
+      "source": "/ece-dashboard",
+      "destination": "/ece-dashboard.html"
+    },
+    {
+      "source": "/vizone/ece/ece-dashboard.html",
+      "destination": "/ece-dashboard.html"
+    },
+    {
+      "source": "/api/the-mia",
+      "destination": "/api/the-mia/index.py"
+    },
+    {
+      "source": "/api/the-mia/youtube",
+      "destination": "/api/the-mia/youtube/index.py"
+    },
+    {
+      "source": "/api/the-mia/google_ads",
+      "destination": "/api/the-mia/google_ads.py"
+    },
+    {
+      "source": "/api/the-mia/benchmark",
+      "destination": "/api/the-mia/benchmark.py"
+    },
+    {
+      "source": "/the-mia-dashboard",
+      "destination": "/the-mia-dashboard.html"
+    },
+    {
+      "source": "/vizone/the-mia/the-mia-dashboard.html",
+      "destination": "/the-mia-dashboard.html"
+    }
+  ]
+}
