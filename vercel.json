@@ -127,6 +127,30 @@
     {
       "source": "/vizone/the-mia/the-mia-dashboard.html",
       "destination": "/the-mia-dashboard.html"
+    },
+    {
+      "source": "/api/vicco",
+      "destination": "/api/vicco/index.py"
+    },
+    {
+      "source": "/api/vicco/youtube",
+      "destination": "/api/vicco/youtube/index.py"
+    },
+    {
+      "source": "/api/vicco/google_ads",
+      "destination": "/api/vicco/google_ads.py"
+    },
+    {
+      "source": "/api/vicco/benchmark",
+      "destination": "/api/vicco/benchmark.py"
+    },
+    {
+      "source": "/vicco-dashboard",
+      "destination": "/vicco-dashboard.html"
+    },
+    {
+      "source": "/vizone/vicco/vicco-dashboard.html",
+      "destination": "/vicco-dashboard.html"
     }
   ]
 }
