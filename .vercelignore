@@ -1,0 +1,16 @@
+# Ignore the downloaded Meta assets
+tmp/
+tmp/*
+
+# Ignore the background scripts (Vercel doesn't run these)
+scripts/
+scripts/*
+
+# Ignore local Python environments and caches
+.venv/
+.venv/*
+__pycache__/
+*.pyc
+
+# Ignore local secrets
+.env.local

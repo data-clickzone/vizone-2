@@ -25,6 +25,14 @@
       "destination": "/the-mia-dashboard.html"
     },
     {
+      "source": "/api/the-mia/meta_creatives",
+      "destination": "/api/the-mia/meta_creatives.py"
+    },
+    {
+      "source": "/api/the-mia/meta_asset_manifest",
+      "destination": "/api/the-mia/meta_asset_manifest.py"
+    },
+    {
       "source": "/api/vicco",
       "destination": "/api/vicco/index.py"
     },
