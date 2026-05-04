@@ -33,30 +33,6 @@
       "destination": "/api/the-mia/meta_asset_manifest.py"
     },
     {
-      "source": "/api/vicco",
-      "destination": "/api/vicco/index.py"
-    },
-    {
-      "source": "/api/vicco/youtube",
-      "destination": "/api/vicco/youtube/index.py"
-    },
-    {
-      "source": "/api/vicco/google_ads",
-      "destination": "/api/vicco/google_ads.py"
-    },
-    {
-      "source": "/api/vicco/benchmark",
-      "destination": "/api/vicco/benchmark.py"
-    },
-    {
-      "source": "/vicco-dashboard",
-      "destination": "/vicco-dashboard.html"
-    },
-    {
-      "source": "/vizone/vicco/vicco-dashboard.html",
-      "destination": "/vicco-dashboard.html"
-    },
-    {
       "source": "/api/grace-brands",
       "destination": "/api/grace-brands/index.py"
     },
@@ -79,6 +55,14 @@
     {
       "source": "/vizone/grace-brands/grace-brands-dashboard.html",
       "destination": "/grace-brands-dashboard.html"
+    },
+    {
+      "source": "/api/grace-brands/meta_creatives",
+      "destination": "/api/grace-brands/meta_creatives.py"
+    },
+    {
+      "source": "/api/grace-brands/meta_asset_manifest",
+      "destination": "/api/grace-brands/meta_asset_manifest.py"
     }
   ]
 }
