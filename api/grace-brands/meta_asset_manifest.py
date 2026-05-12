@@ -9,7 +9,7 @@ import os
 import ssl
 
 
-DEFAULT_MANIFEST_FILE_ID = "1jMo772Pmwk_141TL6b0Dq-_7_bS0C9Dm"
+DEFAULT_MANIFEST_FILE_ID = "1nes-n0Rbb-LKdW4I4B9nnWtuYyMvotF2"
 DRIVE_DOWNLOAD_URL = "https://drive.google.com/uc?export=download&id={file_id}"
 
 
