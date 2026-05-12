@@ -832,6 +832,88 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dry-run", action="store_true", help="Fetch and download only; skip Drive upload.")
     return parser.parse_args()
 
+# New manifest merger function
+
+def update_master_manifest(service, folder_id: str, new_rows: list[ArchiveRow], output_dir: Path, share_anyone: bool) -> str:
+    from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
+    import io
+
+    # A static name ensures Vercel only ever has to read one file
+    manifest_filename = "master_meta_manifest.csv"
+    local_path = output_dir / manifest_filename
+    fieldnames = list(ArchiveRow.__dataclass_fields__.keys())
+    existing_rows_dict = {}
+
+    # 1. Look for the existing Master CSV in Google Drive
+    existing_manifests = [f for f in list_folder_children(service, folder_id) if f.get("name") == manifest_filename]
+
+    if existing_manifests:
+        existing_id = existing_manifests[0]["id"]
+        print(f"Found existing Master Manifest (ID: {existing_id}). Downloading and merging...")
+        
+        # Download the existing CSV from Drive into memory
+        request = service.files().get_media(fileId=existing_id)
+        file_stream = io.BytesIO()
+        downloader = MediaIoBaseDownload(file_stream, request)
+        done = False
+        while not done:
+            status, done = downloader.next_chunk()
+
+        file_stream.seek(0)
+        csv_text = file_stream.read().decode('utf-8')
+        if csv_text.startswith("\ufeff"):
+            csv_text = csv_text[1:]
+
+        # Read the existing rows and store them by a unique key to prevent duplicates
+        reader = csv.DictReader(io.StringIO(csv_text))
+        for row in reader:
+            dedupe_key = f"{row.get('ad_id')}_{row.get('creative_id')}_{row.get('asset_role')}_{row.get('asset_key')}"
+            existing_rows_dict[dedupe_key] = row
+
+    # 2. Append (Upsert) the new rows from today's run
+    for row in new_rows:
+        dedupe_key = f"{row.ad_id}_{row.creative_id}_{row.asset_role}_{row.asset_key}"
+        row_dict = {field: getattr(row, field) for field in fieldnames}
+        existing_rows_dict[dedupe_key] = row_dict
+
+    # 3. Write the combined Master CSV locally
+    combined_rows = list(existing_rows_dict.values())
+    with local_path.open("w", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in combined_rows:
+            writer.writerow(row)
+
+    print(f"Master Manifest successfully compiled with {len(combined_rows)} total rows.")
+
+    # 4. Upload or Update in Google Drive
+    mime_type = "text/csv"
+    media = MediaFileUpload(str(local_path), mimetype=mime_type, resumable=True)
+
+    if existing_manifests:
+        existing_id = existing_manifests[0]["id"]
+        service.files().update(
+            fileId=existing_id,
+            media_body=media,
+            supportsAllDrives=True
+        ).execute()
+        print(f"✅ Master Manifest UPDATED in Drive! File ID remains unchanged: {existing_id}")
+        return existing_id
+    else:
+        uploaded = upload_file(
+            service, 
+            folder_id, 
+            local_path, 
+            "Master Meta creative asset archive manifest",
+            app_properties={"source": "meta_marketing_api"}
+        )
+        new_id = uploaded["id"]
+        if share_anyone:
+            make_public(service, new_id)
+        print(f"🚀 NEW Master Manifest created! ADD THIS ID TO VERCEL: {new_id}")
+        return new_id
+
+# End of the new function
 
 def main() -> int:
     args = parse_args()
@@ -977,6 +1059,8 @@ def main() -> int:
                 row.error = str(error)
                 print(f"[{index}/{len(downloaded)}] upload failed {path.name}: {error}", file=sys.stderr)
 
+
+    """
     manifest_path = output_dir / f"grace_brands_meta_asset_manifest_{since.isoformat()}_{until.isoformat()}.csv"
     write_manifest(manifest_path, rows)
     print(f"Manifest written: {manifest_path}")
@@ -1002,6 +1086,15 @@ def main() -> int:
             print(f"Manifest uploaded: {uploaded['webViewLink']}")
         except Exception as error:
             print(f"Manifest upload failed: {error}", file=sys.stderr)
+    """
+
+    if service and folder_id:
+        try:
+            # Call our new smart merger function!
+            final_manifest_id = update_master_manifest(service, folder_id, rows, output_dir, args.share_anyone)
+            manifest_path = output_dir / "master_meta_manifest.csv"
+        except Exception as error:
+            print(f"Manifest update failed: {error}", file=sys.stderr)
 
     uploaded_count = sum(1 for row in rows if row.upload_status in {"uploaded", "uploaded_duplicate", "existing_duplicate"})
     uploaded_file_count = sum(1 for row in rows if row.upload_status == "uploaded")
