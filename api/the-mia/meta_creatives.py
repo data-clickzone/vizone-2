@@ -443,8 +443,8 @@ class handler(BaseHTTPRequestHandler):
         json_response(self, 200, {"ok": True})
 
     def do_GET(self):
-        token = env_first("THE_MIA_META_ACCESS_TOKEN", "META_ACCESS_TOKEN", "FACEBOOK_ACCESS_TOKEN")
-        account_id = normalize_account_id(env_first("THE_MIA_META_AD_ACCOUNT_ID", "META_AD_ACCOUNT_ID", "FACEBOOK_AD_ACCOUNT_ID"))
+        token = "EAAZBYBFzJ2scBReDV22UIdmOLiFSioiJ2yLZA7XZBjfm2kZBcSkDpo9fRXjwj7ozr9moHaQmNCvgCuY3sQVSJeQezwaZAaELvGrANNvBnDdhVcNlf7JqXM3iHPJuQHoFRJpCEIJmQd3DRm8BPwa7UiGs8DuN5rIaGjln5oFuKsVSPQw6FnAUdYZBHm10cZC7FcZD" # env_first("THE_MIA_META_ACCESS_TOKEN", "META_ACCESS_TOKEN", "FACEBOOK_ACCESS_TOKEN")
+        account_id = "act_773663813796690" # normalize_account_id(env_first("THE_MIA_META_AD_ACCOUNT_ID", "META_AD_ACCOUNT_ID", "FACEBOOK_AD_ACCOUNT_ID"))
         version = env_first("THE_MIA_META_API_VERSION", "META_API_VERSION") or DEFAULT_GRAPH_VERSION
 
         if not token or not account_id:

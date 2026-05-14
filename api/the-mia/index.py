@@ -56,297 +56,192 @@ class handler(BaseHTTPRequestHandler):
     def parse_sheet_data(self, rows):
         """
         Google Sheets'teki haftalık raw data formatını parse eder
-        Image URL'leri de dahil eder
-        Week End yerine Week Start kullanır
+        Verileri Ad Name yerine Ad ID bazında gruplayarak metrik karışmasını önler
         """
-        
-        # Header'ları al
         headers = [h.strip() for h in rows[0]]
-        
-        # Sütun indekslerini bul
         col_indices = {}
+        
         for idx, header in enumerate(headers):
             header_lower = header.lower()
             
-            # Temel bilgiler
-            if 'ad name' in header_lower:
-                col_indices['ad_name'] = idx
-            elif 'campaign name' in header_lower:
-                col_indices['campaign_name'] = idx
-            elif 'ad set name' in header_lower:
-                col_indices['ad_set_name'] = idx
-            elif 'image url' in header_lower:
-                col_indices['image_url'] = idx
-            # WEEK START kullan (Week End yerine)
-            elif header_lower == 'week start' or 'week start' in header_lower:
-                col_indices['week_start'] = idx
-            elif header_lower == 'week end' or 'week end' in header_lower:
-                col_indices['week_start'] = idx  # Week End varsa onu da Week Start olarak kullan
-            elif header_lower == 'status':
-                col_indices['status'] = idx
-            elif 'days live' in header_lower:
-                col_indices['days_live'] = idx
-            elif header_lower == 'frequency':
-                col_indices['frequency'] = idx
+            if 'ad name' in header_lower: col_indices['ad_name'] = idx
+            elif 'campaign name' in header_lower: col_indices['campaign_name'] = idx
+            elif 'ad set name' in header_lower: col_indices['ad_set_name'] = idx
+            elif 'image url' in header_lower: col_indices['image_url'] = idx
+            elif header_lower == 'week start' or 'week start' in header_lower: col_indices['week_start'] = idx
+            elif header_lower == 'week end' or 'week end' in header_lower: col_indices['week_start'] = idx
+            elif header_lower == 'status': col_indices['status'] = idx
+            elif 'days live' in header_lower: col_indices['days_live'] = idx
+            elif header_lower == 'frequency': col_indices['frequency'] = idx
+            
+            # THE MISSING IDS
+            elif header_lower == 'ad_id' or header_lower == 'ad id': col_indices['ad_id'] = idx
+            elif header_lower == 'campaign_id' or header_lower == 'campaign id': col_indices['campaign_id'] = idx
+            elif header_lower == 'adset_id' or header_lower == 'adset id': col_indices['adset_id'] = idx
                 
-            # Performans metrikleri
-            elif header_lower == 'impressions':
-                col_indices['impressions'] = idx
-            elif header_lower == 'reach':
-                col_indices['reach'] = idx
-            elif header_lower == 'clicks':
-                col_indices['clicks'] = idx
-            elif header_lower == 'ctr':
-                col_indices['ctr'] = idx
-            elif header_lower == 'cpc':
-                col_indices['cpc'] = idx
-            elif header_lower == 'cpm':
-                col_indices['cpm'] = idx
-            elif header_lower == 'spend':
-                col_indices['spend'] = idx
-                
-            # Conversion metrikleri
-            elif 'purchases' in header_lower and 'count' in header_lower:
-                col_indices['purchases'] = idx
-            elif 'purchase value' in header_lower:
-                col_indices['revenue'] = idx
-            elif 'add to cart' in header_lower and 'count' in header_lower:
-                col_indices['add_to_cart'] = idx
-            elif 'view content' in header_lower and 'count' in header_lower:
-                col_indices['view_content'] = idx
-                
-            # Video metrikleri
-            elif 'video plays' in header_lower and 'any' in header_lower:
-                col_indices['video_plays'] = idx
-            elif 'video 25%' in header_lower or 'video 25' in header_lower:
-                col_indices['video_25'] = idx
-            elif 'video 50%' in header_lower or 'video 50' in header_lower:
-                col_indices['video_50'] = idx
-            elif 'video 75%' in header_lower or 'video 75' in header_lower:
-                col_indices['video_75'] = idx
-            elif 'video 95%' in header_lower or 'video 95' in header_lower:
-                col_indices['video_95'] = idx
-            elif 'video avg watch time' in header_lower:
-                col_indices['video_avg_watch'] = idx
-                
-            # Ranking metrikleri
-            elif 'quality ranking' in header_lower:
-                col_indices['quality_ranking'] = idx
-            elif 'engagement rate ranking' in header_lower:
-                col_indices['engagement_ranking'] = idx
-            elif 'conversion rate ranking' in header_lower:
-                col_indices['conversion_ranking'] = idx
+            elif header_lower == 'impressions': col_indices['impressions'] = idx
+            elif header_lower == 'reach': col_indices['reach'] = idx
+            elif header_lower == 'clicks': col_indices['clicks'] = idx
+            elif header_lower == 'ctr': col_indices['ctr'] = idx
+            elif header_lower == 'cpc': col_indices['cpc'] = idx
+            elif header_lower == 'cpm': col_indices['cpm'] = idx
+            elif header_lower == 'spend': col_indices['spend'] = idx
+            elif 'purchases' in header_lower and 'count' in header_lower: col_indices['purchases'] = idx
+            elif 'purchase value' in header_lower: col_indices['revenue'] = idx
+            elif 'add to cart' in header_lower and 'count' in header_lower: col_indices['add_to_cart'] = idx
+            elif 'view content' in header_lower and 'count' in header_lower: col_indices['view_content'] = idx
+            elif 'video plays' in header_lower and 'any' in header_lower: col_indices['video_plays'] = idx
+            elif 'video 25' in header_lower: col_indices['video_25'] = idx
+            elif 'video 50' in header_lower: col_indices['video_50'] = idx
+            elif 'video 75' in header_lower: col_indices['video_75'] = idx
+            elif 'video 95' in header_lower: col_indices['video_95'] = idx
+            elif 'video avg watch time' in header_lower: col_indices['video_avg_watch'] = idx
+            elif 'quality ranking' in header_lower: col_indices['quality_ranking'] = idx
+            elif 'engagement rate ranking' in header_lower: col_indices['engagement_ranking'] = idx
+            elif 'conversion rate ranking' in header_lower: col_indices['conversion_ranking'] = idx
+
+        if 'ad_name' not in col_indices: raise ValueError("Ad Name sütunu bulunamadı!")
+        if 'week_start' not in col_indices: raise ValueError("Week Start/End sütunu bulunamadı!")
         
-        if 'ad_name' not in col_indices:
-            raise ValueError("Ad Name sütunu bulunamadı!")
-        
-        if 'week_start' not in col_indices:
-            raise ValueError("Week Start veya Week End sütunu bulunamadı!")
-        
-        # Verileri grupla (Ad Name bazında)
         grouped_data = defaultdict(lambda: {
+            'ad_id': '',
             'name': '',
+            'campaign_name': '',
+            'ad_set_name': '',
             'status': 'ACTIVE',
             'imageUrl': '',
             'weeks': [],
             'weekly_metrics': []
         })
         
-        # Her satırı işle
         for row in rows[1:]:
-            if len(row) < 5:
-                continue
+            if len(row) < 5: continue
             
             ad_name = row[col_indices['ad_name']].strip() if 'ad_name' in col_indices and col_indices['ad_name'] < len(row) else ''
+            ad_id = row[col_indices['ad_id']].strip() if 'ad_id' in col_indices and col_indices['ad_id'] < len(row) else ''
             
-            if not ad_name:
-                continue
+            if not ad_name: continue
             
-            # İlk defa görülen ad ise bilgileri kaydet
-            if not grouped_data[ad_name]['name']:
-                grouped_data[ad_name]['name'] = ad_name
+            # GROUP BY AD_ID TO PREVENT METRIC MIXING (Fallback to ad_name if ID is missing)
+            group_key = ad_id if ad_id else ad_name
+            
+            if not grouped_data[group_key]['name']:
+                grouped_data[group_key]['name'] = ad_name
+                grouped_data[group_key]['ad_id'] = ad_id
+                
+                if 'campaign_name' in col_indices and col_indices['campaign_name'] < len(row):
+                    grouped_data[group_key]['campaign_name'] = row[col_indices['campaign_name']].strip()
+                if 'ad_set_name' in col_indices and col_indices['ad_set_name'] < len(row):
+                    grouped_data[group_key]['ad_set_name'] = row[col_indices['ad_set_name']].strip()
+                    
                 if 'status' in col_indices and col_indices['status'] < len(row):
                     status = row[col_indices['status']].strip()
-                    grouped_data[ad_name]['status'] = status if status else 'ACTIVE'
+                    grouped_data[group_key]['status'] = status if status else 'ACTIVE'
                 if 'image_url' in col_indices and col_indices['image_url'] < len(row):
-                    image_url = row[col_indices['image_url']].strip()
-                    grouped_data[ad_name]['imageUrl'] = image_url
+                    grouped_data[group_key]['imageUrl'] = row[col_indices['image_url']].strip()
             
-            # Hafta bilgisini al (Week Start)
             week_start = row[col_indices['week_start']].strip() if 'week_start' in col_indices and col_indices['week_start'] < len(row) else ''
             
-            # Metriği parse et
             def get_value(key, default=0):
-                if key not in col_indices or col_indices[key] >= len(row):
-                    return default
-                value = row[col_indices[key]].strip()
-                # Temizle: ₺, %, virgül vs.
-                value = value.replace('₺', '').replace('%', '').replace(',', '').strip()
-                try:
-                    return float(value) if value else default
-                except ValueError:
-                    return default
+                if key not in col_indices or col_indices[key] >= len(row): return default
+                value = row[col_indices[key]].strip().replace('₺', '').replace('%', '').replace(',', '').strip()
+                try: return float(value) if value else default
+                except ValueError: return default
             
             def get_string(key, default=''):
-                if key not in col_indices or col_indices[key] >= len(row):
-                    return default
+                if key not in col_indices or col_indices[key] >= len(row): return default
                 return row[col_indices[key]].strip()
             
-            # Tüm metrikleri al
-            impressions = get_value('impressions', 0)
-            reach = get_value('reach', 0)
-            frequency = get_value('frequency', 0)
-            clicks = get_value('clicks', 0)
-            ctr = get_value('ctr', 0)
-            cpc = get_value('cpc', 0)
-            cpm = get_value('cpm', 0)
-            spend = get_value('spend', 0)
-            purchases = get_value('purchases', 0)
-            revenue = get_value('revenue', 0)
-            add_to_cart = get_value('add_to_cart', 0)
-            view_content = get_value('view_content', 0)
-            video_plays = get_value('video_plays', 0)
-            video_25 = get_value('video_25', 0)
-            video_50 = get_value('video_50', 0)
-            video_75 = get_value('video_75', 0)
-            video_95 = get_value('video_95', 0)
-            video_avg_watch = get_value('video_avg_watch', 0)
-            days_live = get_value('days_live', 0)
-            quality_ranking = get_string('quality_ranking', 'UNKNOWN')
-            engagement_ranking = get_string('engagement_ranking', 'UNKNOWN')
-            conversion_ranking = get_string('conversion_ranking', 'UNKNOWN')
-            
-            # Haftalık veriyi ekle
-            grouped_data[ad_name]['weeks'].append(week_start)
-            grouped_data[ad_name]['weekly_metrics'].append({
-                'impressions': impressions,
-                'reach': reach,
-                'frequency': frequency,
-                'clicks': clicks,
-                'ctr': ctr,
-                'cpc': cpc,
-                'cpm': cpm,
-                'spend': spend,
-                'purchases': purchases,
-                'revenue': revenue,
-                'roas': (revenue / spend) if spend > 0 else 0,
-                'add_to_cart': add_to_cart,
-                'view_content': view_content,
-                'video_plays': video_plays,
-                'video_25': video_25,
-                'video_50': video_50,
-                'video_75': video_75,
-                'video_95': video_95,
-                'video_avg_watch': video_avg_watch,
-                'days_live': days_live,
-                'quality_ranking': quality_ranking,
-                'engagement_ranking': engagement_ranking,
-                'conversion_ranking': conversion_ranking
+            grouped_data[group_key]['weeks'].append(week_start)
+            grouped_data[group_key]['weekly_metrics'].append({
+                'impressions': get_value('impressions', 0),
+                'reach': get_value('reach', 0),
+                'frequency': get_value('frequency', 0),
+                'clicks': get_value('clicks', 0),
+                'ctr': get_value('ctr', 0),
+                'cpc': get_value('cpc', 0),
+                'cpm': get_value('cpm', 0),
+                'spend': get_value('spend', 0),
+                'purchases': get_value('purchases', 0),
+                'revenue': get_value('revenue', 0),
+                'roas': (get_value('revenue', 0) / get_value('spend', 0)) if get_value('spend', 0) > 0 else 0,
+                'add_to_cart': get_value('add_to_cart', 0),
+                'view_content': get_value('view_content', 0),
+                'video_plays': get_value('video_plays', 0),
+                'video_25': get_value('video_25', 0),
+                'video_50': get_value('video_50', 0),
+                'video_75': get_value('video_75', 0),
+                'video_95': get_value('video_95', 0),
+                'video_avg_watch': get_value('video_avg_watch', 0),
+                'days_live': get_value('days_live', 0),
+                'quality_ranking': get_string('quality_ranking', 'UNKNOWN'),
+                'engagement_ranking': get_string('engagement_ranking', 'UNKNOWN'),
+                'conversion_ranking': get_string('conversion_ranking', 'UNKNOWN')
             })
         
-        # Asset objelerini oluştur
         assets = []
-        for idx, (ad_name, data) in enumerate(grouped_data.items(), 1):
-            if not data['weekly_metrics']:
-                continue
+        for idx, (group_key, data) in enumerate(grouped_data.items(), 1):
+            if not data['weekly_metrics']: continue
             
-            # Haftalık verileri dizilere dönüştür
             weeks = data['weeks']
-            impressions = [m['impressions'] for m in data['weekly_metrics']]
-            reaches = [m['reach'] for m in data['weekly_metrics']]
-            frequencies = [m['frequency'] for m in data['weekly_metrics']]
-            clicks = [m['clicks'] for m in data['weekly_metrics']]
+            total_spend = sum(m['spend'] for m in data['weekly_metrics'])
+            total_revenue = sum(m['revenue'] for m in data['weekly_metrics'])
+            total_video_plays = sum(m['video_plays'] for m in data['weekly_metrics'])
+            
             ctrs = [m['ctr'] for m in data['weekly_metrics']]
             cpcs = [m['cpc'] for m in data['weekly_metrics']]
-            cpms = [m['cpm'] for m in data['weekly_metrics']]
-            spends = [m['spend'] for m in data['weekly_metrics']]
-            purchases = [m['purchases'] for m in data['weekly_metrics']]
-            revenues = [m['revenue'] for m in data['weekly_metrics']]
-            roas_list = [m['roas'] for m in data['weekly_metrics']]
-            add_to_carts = [m['add_to_cart'] for m in data['weekly_metrics']]
-            view_contents = [m['view_content'] for m in data['weekly_metrics']]
-            video_plays_list = [m['video_plays'] for m in data['weekly_metrics']]
-            video_25_list = [m['video_25'] for m in data['weekly_metrics']]
-            video_50_list = [m['video_50'] for m in data['weekly_metrics']]
-            video_75_list = [m['video_75'] for m in data['weekly_metrics']]
-            video_95_list = [m['video_95'] for m in data['weekly_metrics']]
-            video_avg_watch_list = [m['video_avg_watch'] for m in data['weekly_metrics']]
-            days_live_list = [m['days_live'] for m in data['weekly_metrics']]
-            quality_rankings = [m['quality_ranking'] for m in data['weekly_metrics']]
-            engagement_rankings = [m['engagement_ranking'] for m in data['weekly_metrics']]
-            conversion_rankings = [m['conversion_ranking'] for m in data['weekly_metrics']]
             
-            # Toplamları hesapla
-            total_impressions = sum(impressions)
-            total_reach = sum(reaches)
-            total_clicks = sum(clicks)
-            total_spend = sum(spends)
-            total_purchases = sum(purchases)
-            total_revenue = sum(revenues)
-            total_add_to_cart = sum(add_to_carts)
-            total_view_content = sum(view_contents)
-            total_video_plays = sum(video_plays_list)
-            
-            # Ortalama CTR, CPC, ROAS
-            avg_ctr = sum(ctrs) / len(ctrs) if ctrs else 0
-            avg_cpc = sum(cpcs) / len(cpcs) if cpcs else 0
-            total_roas = (total_revenue / total_spend) if total_spend > 0 else 0
-            
-            # Asset objesi oluştur
+            # PASS THE REAL META ID SO IMAGES SYNC PERFECTLY
             asset = {
-                'id': idx,
+                'id': data['ad_id'] or idx,
+                'adId': data['ad_id'],
                 'name': data['name'],
+                'campaignName': data['campaign_name'],
+                'adSetName': data['ad_set_name'],
                 'status': data['status'],
                 'imageUrl': data['imageUrl'],
                 'hasVideo': total_video_plays > 0,
-                'labels': [],  # Etiketler için boş array
+                'labels': ['video'] if total_video_plays > 0 else [],
                 
-                # Toplam değerler
-                'impression': int(total_impressions),
-                'reach': int(total_reach),
-                'click': int(total_clicks),
-                'ctr': round(avg_ctr, 2),
+                'impression': int(sum(m['impressions'] for m in data['weekly_metrics'])),
+                'reach': int(sum(m['reach'] for m in data['weekly_metrics'])),
+                'click': int(sum(m['clicks'] for m in data['weekly_metrics'])),
+                'ctr': round(sum(ctrs) / len(ctrs) if ctrs else 0, 2),
                 'spend': round(total_spend, 2),
-                'purchase': int(total_purchases),
+                'purchase': int(sum(m['purchases'] for m in data['weekly_metrics'])),
                 'revenue': round(total_revenue, 2),
-                'roas': round(total_roas, 2),
-                'add_to_cart': int(total_add_to_cart),
-                'view_content': int(total_view_content),
+                'roas': round((total_revenue / total_spend) if total_spend > 0 else 0, 2),
+                'add_to_cart': int(sum(m['add_to_cart'] for m in data['weekly_metrics'])),
+                'view_content': int(sum(m['view_content'] for m in data['weekly_metrics'])),
                 'video_plays': int(total_video_plays),
                 
-                # Haftalık detay verisi
                 'weeklyData': {
                     'weeks': weeks,
-                    'impressions': impressions,
-                    'reach': reaches,
-                    'frequency': frequencies,
-                    'clicks': clicks,
+                    'impressions': [m['impressions'] for m in data['weekly_metrics']],
+                    'reach': [m['reach'] for m in data['weekly_metrics']],
+                    'frequency': [m['frequency'] for m in data['weekly_metrics']],
+                    'clicks': [m['clicks'] for m in data['weekly_metrics']],
                     'ctr': ctrs,
                     'cpc': cpcs,
-                    'cpm': cpms,
-                    'spend': spends,
-                    'purchases': purchases,
-                    'revenue': revenues,
-                    'roas': roas_list,
-                    'add_to_cart': add_to_carts,
-                    'view_content': view_contents,
-                    'video_plays': video_plays_list,
-                    'video_25': video_25_list,
-                    'video_50': video_50_list,
-                    'video_75': video_75_list,
-                    'video_95': video_95_list,
-                    'video_avg_watch': video_avg_watch_list,
-                    'days_live': days_live_list,
-                    'quality_ranking': quality_rankings,
-                    'engagement_ranking': engagement_rankings,
-                    'conversion_ranking': conversion_rankings
+                    'cpm': [m['cpm'] for m in data['weekly_metrics']],
+                    'spend': [m['spend'] for m in data['weekly_metrics']],
+                    'purchases': [m['purchases'] for m in data['weekly_metrics']],
+                    'revenue': [m['revenue'] for m in data['weekly_metrics']],
+                    'roas': [m['roas'] for m in data['weekly_metrics']],
+                    'add_to_cart': [m['add_to_cart'] for m in data['weekly_metrics']],
+                    'view_content': [m['view_content'] for m in data['weekly_metrics']],
+                    'video_plays': [m['video_plays'] for m in data['weekly_metrics']],
+                    'video_25': [m['video_25'] for m in data['weekly_metrics']],
+                    'video_50': [m['video_50'] for m in data['weekly_metrics']],
+                    'video_75': [m['video_75'] for m in data['weekly_metrics']],
+                    'video_95': [m['video_95'] for m in data['weekly_metrics']],
+                    'video_avg_watch': [m['video_avg_watch'] for m in data['weekly_metrics']],
+                    'days_live': [m['days_live'] for m in data['weekly_metrics']],
+                    'quality_ranking': [m['quality_ranking'] for m in data['weekly_metrics']],
+                    'engagement_ranking': [m['engagement_ranking'] for m in data['weekly_metrics']],
+                    'conversion_ranking': [m['conversion_ranking'] for m in data['weekly_metrics']]
                 }
             }
-            
-            # Video varsa label ekle
-            if total_video_plays > 0:
-                asset['labels'].append('video')
-            
             assets.append(asset)
         
         return assets
